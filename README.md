@@ -11,6 +11,7 @@ Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at
 | v1.6.1 | [`v1.6.1`](https://github.com/chainguard-actions/dokku-github-action/tree/v1.6.1) | [`036bf9c`](https://github.com/dokku/github-action/commit/036bf9c07f1b40707a16201bc7a349074c3ec554) |
 | v1.7.0 | [`v1.7.0`](https://github.com/chainguard-actions/dokku-github-action/tree/v1.7.0) | [`130f400`](https://github.com/dokku/github-action/commit/130f400079c51a38a02389708538d85d39f834ec) |
 | v1.8.0 | [`v1.8.0`](https://github.com/chainguard-actions/dokku-github-action/tree/v1.8.0) | [`33d5012`](https://github.com/dokku/github-action/commit/33d50129fe718c3f907c8b29ea58776ed3cf8221) |
+| v1.9.0 | [`v1.9.0`](https://github.com/chainguard-actions/dokku-github-action/tree/v1.9.0) | [`823c08b`](https://github.com/dokku/github-action/commit/823c08b33e974704528c7c7f3d3d8002426e7634) |
 
 ## Privacy
 
