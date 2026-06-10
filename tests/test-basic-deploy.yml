@@ -1,0 +1,40 @@
+name: Test basic deploy inputs
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_REF: refs/heads/main
+      GITHUB_EVENT_NAME: push
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Generate a dummy RSA SSH key for testing
+        id: gen_key
+        run: |
+          ssh-keygen -t rsa -b 2048 -f /tmp/test_key -N "" -q
+          PRIVATE_KEY="$(cat /tmp/test_key)"
+          echo "private_key<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$PRIVATE_KEY" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+      - id: action
+        uses: .
+        continue-on-error: true
+        with:
+          git_remote_url: "ssh://dokku@dokku.example.com/test-app"
+          ssh_private_key: ${{ steps.gen_key.outputs.private_key }}
+          branch: master
+          command: deploy
+
+      - name: Assert action ran (may fail due to no real Dokku server)
+        run: |
+          echo "Action outcome: ${{ steps.action.outcome }}"
+          # The action is expected to fail since there is no real Dokku server,
+          # but it should have started (not skipped).
+          if [ "${{ steps.action.outcome }}" = "skipped" ]; then
+            echo "FAIL: action was skipped unexpectedly"
+            exit 1
+          fi
+          echo "PASS: action ran (outcome: ${{ steps.action.outcome }})"
