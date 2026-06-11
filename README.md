@@ -8,6 +8,7 @@ Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at
 
 | Version | Tag | Upstream commit |
 |---------|-----|-----------------|
+| v1.10.0 | [`v1.10.0`](https://github.com/chainguard-actions/dokku-github-action/tree/v1.10.0) | [`cc7dec1`](https://github.com/dokku/github-action/commit/cc7dec1d2b9fed249a14ae462bc953bba436f78c) |
 | v1.6.1 | [`v1.6.1`](https://github.com/chainguard-actions/dokku-github-action/tree/v1.6.1) | [`036bf9c`](https://github.com/dokku/github-action/commit/036bf9c07f1b40707a16201bc7a349074c3ec554) |
 | v1.7.0 | [`v1.7.0`](https://github.com/chainguard-actions/dokku-github-action/tree/v1.7.0) | [`130f400`](https://github.com/dokku/github-action/commit/130f400079c51a38a02389708538d85d39f834ec) |
 | v1.8.0 | [`v1.8.0`](https://github.com/chainguard-actions/dokku-github-action/tree/v1.8.0) | [`33d5012`](https://github.com/dokku/github-action/commit/33d50129fe718c3f907c8b29ea58776ed3cf8221) |
