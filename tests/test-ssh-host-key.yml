@@ -1,0 +1,38 @@
+---
+name: Test deploy with SSH host key and custom CI branch/commit
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Generate a test SSH key pair and fake host key
+        run: |
+          ssh-keygen -t rsa -b 2048 -f /tmp/test_key -N "" -q
+          echo "TEST_SSH_KEY=$(cat /tmp/test_key | base64 -w 0)" >> $GITHUB_ENV
+          # Generate a fake host key entry for known_hosts format
+          echo "TEST_SSH_HOST_KEY=127.0.0.1 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC7..." >> $GITHUB_ENV
+
+      - name: Run deploy with SSH host key (expected to fail with SSH/connection error)
+        id: deploy
+        continue-on-error: true
+        uses: .
+        with:
+          git_remote_url: "ssh://dokku@127.0.0.1:22/test-app"
+          ssh_private_key: ${{ env.TEST_SSH_KEY }}
+          ssh_host_key: ${{ env.TEST_SSH_HOST_KEY }}
+          branch: "master"
+          command: "deploy"
+          ci_branch_name: "feature-branch"
+          ci_commit: "abc1234567890abcdef1234567890abcdef12345"
+
+      - name: Assert action failed (no real Dokku server available)
+        run: |
+          echo "outcome: ${{ steps.deploy.outcome }}"
+          if [ "${{ steps.deploy.outcome }}" = "success" ]; then
+            echo "FAIL: expected action to fail without a real Dokku server"
+            exit 1
+          fi
+          echo "PASS: action correctly failed when no Dokku server is available (ssh host key)"

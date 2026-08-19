@@ -1,0 +1,35 @@
+---
+name: Test docker image deploy
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Generate a test SSH key pair
+        run: |
+          ssh-keygen -t rsa -b 2048 -f /tmp/test_key -N "" -q
+          echo "TEST_SSH_KEY=$(cat /tmp/test_key | base64 -w 0)" >> $GITHUB_ENV
+
+      - name: Run docker image deploy (expected to fail with SSH/connection error)
+        id: deploy
+        continue-on-error: true
+        uses: .
+        with:
+          git_remote_url: "ssh://dokku@127.0.0.1:22/test-app"
+          ssh_private_key: ${{ env.TEST_SSH_KEY }}
+          command: "deploy"
+          deploy_docker_image: "nginx:latest"
+          deploy_user_name: "testuser"
+          deploy_user_email: "testuser@example.com"
+
+      - name: Assert action failed (no real Dokku server available)
+        run: |
+          echo "outcome: ${{ steps.deploy.outcome }}"
+          if [ "${{ steps.deploy.outcome }}" = "success" ]; then
+            echo "FAIL: expected action to fail without a real Dokku server"
+            exit 1
+          fi
+          echo "PASS: action correctly failed when no Dokku server is available (docker image deploy)"
