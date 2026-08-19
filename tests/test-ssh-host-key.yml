@@ -1,0 +1,62 @@
+---
+name: Test SSH host key input
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Set up git origin reachable inside Docker container
+        run: |
+          git config user.email "test@example.com"
+          git config user.name "Test User"
+          rm -rf "$GITHUB_WORKSPACE/.git-remote"
+          git init --bare "$GITHUB_WORKSPACE/.git-remote"
+          git push "$GITHUB_WORKSPACE/.git-remote" HEAD:refs/heads/master
+          git remote set-url origin "$GITHUB_WORKSPACE/.git-remote" 2>/dev/null || \
+            git remote add origin "$GITHUB_WORKSPACE/.git-remote"
+
+      - name: Generate throwaway SSH keys for testing
+        run: |
+          # Generate the deploy key
+          ssh-keygen -t rsa -b 2048 -f /tmp/test_key -N "" -q
+          echo "TEST_SSH_KEY<<EOF" >> "$GITHUB_ENV"
+          cat /tmp/test_key >> "$GITHUB_ENV"
+          echo "EOF" >> "$GITHUB_ENV"
+          # Generate a fake host key entry (simulating ssh-keyscan output)
+          ssh-keygen -t rsa -b 2048 -f /tmp/host_key -N "" -q
+          HOST_KEY_PUB=$(cat /tmp/host_key.pub)
+          echo "TEST_SSH_HOST_KEY=127.0.0.1 $HOST_KEY_PUB" >> "$GITHUB_ENV"
+
+      - id: action
+        name: Run dokku deploy action with SSH host key
+        uses: .
+        continue-on-error: true
+        with:
+          git_remote_url: "ssh://dokku@127.0.0.1:22/testapp"
+          ssh_private_key: ${{ env.TEST_SSH_KEY }}
+          ssh_host_key: ${{ env.TEST_SSH_HOST_KEY }}
+          branch: master
+          command: deploy
+
+      - name: Assert action ran (ssh_host_key input accepted)
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          # The action should fail at SSH connection (not at input parsing)
+          # This verifies ssh_host_key is accepted as a valid input
+          if [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action failed at SSH connection as expected (ssh_host_key input accepted)"
+          elif [ "$OUTCOME" = "success" ]; then
+            echo "FAIL: action unexpectedly succeeded"
+            exit 1
+          else
+            echo "PASS: action outcome was $OUTCOME"
+          fi

@@ -13,12 +13,12 @@ jobs:
     if: github.event_name == 'pull_request' && github.event.action == 'opened'
     steps:
       - name: Cloning repo
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Create and push the review app
-        uses: dokku/github-action@b705ed643fea68530501b1faf37abe233caa06be # master
+        uses: dokku/github-action@master
         with:
           # create a review app
           command: review-apps:create
@@ -34,12 +34,12 @@ jobs:
     if: github.event_name == 'pull_request' && github.event.action != 'opened' && github.event.action != 'closed'
     steps:
       - name: Cloning repo
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Push to dokku
-        uses: dokku/github-action@b705ed643fea68530501b1faf37abe233caa06be # master
+        uses: dokku/github-action@master
         with:
           # create a review app
           git_remote_url: 'ssh://dokku@dokku.me:22/appname'
@@ -53,7 +53,7 @@ jobs:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
     steps:
       - name: Destroy the review app
-        uses: dokku/github-action@b705ed643fea68530501b1faf37abe233caa06be # master
+        uses: dokku/github-action@master
         with:
           # destroy a review app
           command: review-apps:destroy

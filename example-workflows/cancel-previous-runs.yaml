@@ -13,17 +13,17 @@ jobs:
     steps:
       # third-party action that cancels previous runs
       - name: Cancel Previous Runs
-        uses: styfle/cancel-workflow-action@85880fa0301c86cca9da44039ee3bb12d3bedbfa # 0.12.1
+        uses: styfle/cancel-workflow-action@0.12.1
         with:
           access_token: ${{ github.token }}
 
       - name: Cloning repo
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Push to dokku
-        uses: dokku/github-action@b705ed643fea68530501b1faf37abe233caa06be # master
+        uses: dokku/github-action@master
         with:
           git_remote_url: 'ssh://dokku@dokku.me:22/appname'
           ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
