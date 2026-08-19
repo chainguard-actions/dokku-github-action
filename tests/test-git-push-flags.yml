@@ -1,5 +1,5 @@
 ---
-name: Test basic deploy (SSH connection failure expected)
+name: Test deploy with git push flags and custom branch
 on:
   workflow_dispatch:
 jobs:
@@ -25,14 +25,16 @@ jobs:
           git remote set-url origin "$GITHUB_WORKSPACE/.git-remote" 2>/dev/null || \
             git remote add origin "$GITHUB_WORKSPACE/.git-remote"
 
-      - name: Run deploy action (expected to fail with SSH error, not config error)
+      - name: Run deploy action with git push flags (expected to fail with SSH error)
         id: action
         uses: .
         continue-on-error: true
         with:
           git_remote_url: "ssh://dokku@192.0.2.1/test-app"
           ssh_private_key: ${{ env.TEST_SSH_KEY }}
-          branch: master
+          branch: main
+          ci_branch_name: "main"
+          git_push_flags: "--force"
           command: deploy
 
       - name: Assert action failed (SSH unreachable, not config error)

@@ -1,5 +1,5 @@
 ---
-name: Test basic deploy (SSH connection failure expected)
+name: Test deploy with SSH host key and trace mode
 on:
   workflow_dispatch:
 jobs:
@@ -8,12 +8,16 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Generate test SSH key
+      - name: Generate test SSH key and fake host key
         run: |
           ssh-keygen -t rsa -b 2048 -f /tmp/test_key -N "" -q
           echo "TEST_SSH_KEY<<EOF" >> $GITHUB_ENV
           cat /tmp/test_key >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
+          # Generate a fake host key entry (won't match any real host)
+          ssh-keygen -t rsa -b 2048 -f /tmp/host_key -N "" -q
+          FAKE_HOST_KEY="192.0.2.1 $(cat /tmp/host_key.pub)"
+          echo "FAKE_HOST_KEY=$FAKE_HOST_KEY" >> $GITHUB_ENV
 
       - name: Set up git origin reachable inside Docker container
         run: |
@@ -25,15 +29,17 @@ jobs:
           git remote set-url origin "$GITHUB_WORKSPACE/.git-remote" 2>/dev/null || \
             git remote add origin "$GITHUB_WORKSPACE/.git-remote"
 
-      - name: Run deploy action (expected to fail with SSH error, not config error)
+      - name: Run deploy action with ssh_host_key and trace (expected to fail with SSH error)
         id: action
         uses: .
         continue-on-error: true
         with:
           git_remote_url: "ssh://dokku@192.0.2.1/test-app"
           ssh_private_key: ${{ env.TEST_SSH_KEY }}
+          ssh_host_key: ${{ env.FAKE_HOST_KEY }}
           branch: master
           command: deploy
+          trace: "true"
 
       - name: Assert action failed (SSH unreachable, not config error)
         run: |
