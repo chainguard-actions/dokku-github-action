@@ -1,12 +1,14 @@
-name: Test basic deploy
+name: Test review app creation
 on:
   workflow_dispatch:
 jobs:
   test:
     runs-on: ubuntu-latest
     env:
-      GITHUB_REF: refs/heads/main
-      GITHUB_EVENT_NAME: push
+      GITHUB_REF: refs/pull/42/merge
+      GITHUB_EVENT_NAME: pull_request
+      GITHUB_HEAD_REF: feature-branch
+      GITHUB_BASE_REF: main
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
@@ -25,16 +27,16 @@ jobs:
         with:
           git_remote_url: "ssh://dokku@192.0.2.1/test-app"
           ssh_private_key: ${{ steps.gen-key.outputs.private_key }}
-          branch: master
-          command: deploy
+          command: review-app-create
+          review_app_name: test-app-pr-42
 
-      - name: Assert action attempted to run (expected SSH failure)
+      - name: Assert action attempted review app creation (expected SSH failure)
         env:
           OUTCOME: ${{ steps.action.outcome }}
         run: |
           echo "action outcome: $OUTCOME"
           # The action should fail because there's no real Dokku server,
-          # but it should NOT succeed (which would mean it deployed to a real server)
+          # but it should NOT succeed (which would mean it connected to a real server)
           if [ "$OUTCOME" = "success" ]; then
             echo "FAIL: action unexpectedly succeeded - should have failed to connect"
             exit 1

@@ -1,0 +1,56 @@
+---
+name: "lint"
+
+# yamllint disable-line rule:truthy
+on:
+  pull_request:
+    branches:
+      - "*"
+  push:
+    branches:
+      - "master"
+
+permissions:
+  contents: read
+
+jobs:
+  hadolint:
+    name: hadolint
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - name: Clone
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+      - name: Run hadolint
+        uses: brpaz/hadolint-action@c27bd9edc1e95eed30474db8f295ff5807ebca14
+        # v1.1.0 => eb9b96be611b84830aa1babacfb7070ecd2a8b1b
+
+  markdown-lint:
+    name: markdown-lint
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - name: Clone
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+      - name: Run markdown-lint
+        uses: avto-dev/markdown-lint@04d43ee9191307b50935a753da3b775ab695eceb
+        # v1.4.0 => 6e6d4393411fbaae3c3aeee5661ba84a0352ed3b
+        with:
+          config: ".github/linters/.markdown-lint.yaml"
+          args: "./README.md"
+
+  yamllint:
+    name: yamllint
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - name: Clone
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+      - name: Run yamllint
+        uses: ibiqlik/action-yamllint@2576378a8e339169678f9939646ee3ee325e845c
+        # v3.0.0 => b2aeacc1b7eeb8c23e84bba320d04fb5d6a323ee
+        with:
+          config_file: ".github/linters/.yamllint.yaml"

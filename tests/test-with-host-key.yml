@@ -1,4 +1,4 @@
-name: Test basic deploy
+name: Test deploy with SSH host key and push flags
 on:
   workflow_dispatch:
 jobs:
@@ -10,7 +10,7 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Generate dummy SSH key
+      - name: Generate dummy SSH key and fake host key
         id: gen-key
         run: |
           ssh-keygen -t rsa -b 2048 -f /tmp/test_key -N "" -q
@@ -18,6 +18,10 @@ jobs:
           echo "private_key<<EOF" >> $GITHUB_OUTPUT
           echo "$PRIVATE_KEY" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
+          # Generate a fake host key entry (format: host key-type key-data)
+          ssh-keygen -t rsa -b 2048 -f /tmp/host_key -N "" -q
+          HOST_KEY="192.0.2.1 $(cat /tmp/host_key.pub)"
+          echo "host_key=$HOST_KEY" >> $GITHUB_OUTPUT
 
       - id: action
         uses: .
@@ -25,16 +29,18 @@ jobs:
         with:
           git_remote_url: "ssh://dokku@192.0.2.1/test-app"
           ssh_private_key: ${{ steps.gen-key.outputs.private_key }}
-          branch: master
+          ssh_host_key: ${{ steps.gen-key.outputs.host_key }}
+          git_push_flags: "--force"
+          branch: main
           command: deploy
 
-      - name: Assert action attempted to run (expected SSH failure)
+      - name: Assert action attempted to run with host key (expected SSH failure)
         env:
           OUTCOME: ${{ steps.action.outcome }}
         run: |
           echo "action outcome: $OUTCOME"
           # The action should fail because there's no real Dokku server,
-          # but it should NOT succeed (which would mean it deployed to a real server)
+          # but it should NOT succeed (which would mean it connected to a real server)
           if [ "$OUTCOME" = "success" ]; then
             echo "FAIL: action unexpectedly succeeded - should have failed to connect"
             exit 1

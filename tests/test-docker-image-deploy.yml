@@ -1,4 +1,4 @@
-name: Test basic deploy
+name: Test docker image deploy
 on:
   workflow_dispatch:
 jobs:
@@ -25,16 +25,18 @@ jobs:
         with:
           git_remote_url: "ssh://dokku@192.0.2.1/test-app"
           ssh_private_key: ${{ steps.gen-key.outputs.private_key }}
-          branch: master
+          deploy_docker_image: "nginx:latest"
+          deploy_user_name: "testuser"
+          deploy_user_email: "testuser@example.com"
           command: deploy
 
-      - name: Assert action attempted to run (expected SSH failure)
+      - name: Assert action attempted docker image deploy (expected SSH failure)
         env:
           OUTCOME: ${{ steps.action.outcome }}
         run: |
           echo "action outcome: $OUTCOME"
           # The action should fail because there's no real Dokku server,
-          # but it should NOT succeed (which would mean it deployed to a real server)
+          # but it should NOT succeed (which would mean it connected to a real server)
           if [ "$OUTCOME" = "success" ]; then
             echo "FAIL: action unexpectedly succeeded - should have failed to connect"
             exit 1
