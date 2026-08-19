@@ -12,30 +12,30 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Cloning repo
-        uses: actions/checkout@v5
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
         with:
           fetch-depth: 0
 
       - name: Set up qemu
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3
 
       - name: Set up docker buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
 
       - name: Login to docker hub
-        uses: docker/login-action@v3
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build and push
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
         with:
           push: true
           tags: ${{ github.repository }}:${{ github.sha }}
 
       - name: Push to dokku
-        uses: dokku/github-action@master
+        uses: dokku/github-action@6a74219fbab2441a36df6a32a61d72f05d43a21b # master
         with:
           git_remote_url: 'ssh://dokku@dokku.me:22/appname'
           ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}

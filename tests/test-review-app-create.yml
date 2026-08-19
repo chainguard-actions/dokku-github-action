@@ -1,5 +1,5 @@
 ---
-name: Test basic deploy invocation
+name: Test review app create invocation
 on:
   workflow_dispatch:
 
@@ -7,15 +7,17 @@ jobs:
   test:
     runs-on: ubuntu-latest
     env:
-      GITHUB_REF: refs/heads/master
-      GITHUB_EVENT_NAME: push
+      GITHUB_REF: refs/pull/42/merge
+      GITHUB_EVENT_NAME: pull_request
+      GITHUB_HEAD_REF: feature-branch
+      GITHUB_BASE_REF: master
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
 
-      - name: Run dokku deploy action (expect SSH failure, not input error)
+      - name: Run dokku review-apps:create action (expect SSH failure, not input error)
         id: action
         uses: .
         continue-on-error: true
@@ -28,19 +30,18 @@ jobs:
             Rlc3Qta2V5LXBsYWNlaG9sZGVyLWZha2UtdGVzdAAAABNzc2gtZWQyNTUxOQAAAAAAAA
             AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
             -----END OPENSSH PRIVATE KEY-----
-          branch: master
-          command: deploy
+          command: review-apps:create
+          review_app_name: myapp-pr-42
 
-      - name: Assert action was invoked (SSH failure is expected, not input error)
+      - name: Assert action was invoked for review app creation
         env:
           OUTCOME: ${{ steps.action.outcome }}
         run: |
           echo "action outcome: $OUTCOME"
           # The action should fail due to SSH connectivity (no real Dokku server),
-          # not due to missing required inputs. Any outcome (success or failure) is
-          # acceptable as long as the action was invoked.
+          # not due to missing required inputs or invalid command.
           if [ "$OUTCOME" = "skipped" ]; then
             echo "FAIL: action was skipped, expected it to be invoked"
             exit 1
           fi
-          echo "PASS: action was invoked (outcome=$OUTCOME)"
+          echo "PASS: review-apps:create action was invoked (outcome=$OUTCOME)"

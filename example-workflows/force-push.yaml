@@ -12,12 +12,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Cloning repo
-        uses: actions/checkout@v5
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
         with:
           fetch-depth: 0
 
       - name: Push to dokku
-        uses: dokku/github-action@master
+        uses: dokku/github-action@6a74219fbab2441a36df6a32a61d72f05d43a21b # master
         with:
           # specify `--force` as a flag for git pushes
           git_push_flags: '--force'
